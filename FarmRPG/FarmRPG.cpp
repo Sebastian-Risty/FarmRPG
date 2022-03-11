@@ -137,42 +137,39 @@ void moveClick(POINT pt) {
     GetCursorPos(&curP);
     ScreenToClient(GetDesktopWindow(), &curP);
 
-    int dx = abs(pt.x - curP.x);
-    int dy = abs(pt.y - curP.y);
-    bool decide = true;
-    if (dx > dy) {
-        decide = !decide;
-    }
     double distance = sqrt(pow(pt.x - curP.x, 2) + pow(pt.y - curP.y, 2) * 1.0);
 
     std::vector<POINT> movePoints;
 
     // Bresenham’s Line Generation Algorithm
-    int pk = 2 * dy - dx;
-    for (int i = 0; i <= dx; ++i) {
-        POINT temp { curP.x, curP.y };
-        movePoints.emplace_back(temp);
+    int dx = abs(pt.x - curP.x);
+    int sx = curP.x < pt.x ? 1 : -1;
+    int dy = -abs(pt.y - curP.y);
+    int sy = curP.y < pt.y ? 1 : -1;
+    int error = dx + dy;
 
-        //checking either to decrement or increment the value
-        //if we have to plot from (0,100) to (100,0)
-        curP.x < pt.x ? curP.x++ : curP.x--;
-        if (pk < 0) {
-            if (!decide) {
-                pk = pk + 2 * dy;
-            }
-            else {
-                //(y1,x1) is passed in xt
-                pk = pk + 2 * dy;
-            }
+    while (true) {
+        movePoints.push_back(POINT{ curP.x, curP.y });
+        if (curP.x == pt.x && curP.y == pt.y) break;
+
+        int e2 = 2 * error;
+
+        if (e2 >= dy) {
+            if (curP.x == pt.x) break;
+            error += dy;
+            curP.x += sx;
         }
-        else {
-            curP.y < pt.y ? curP.y++ : curP.y--;
-            pk = pk + 2 * dy - 2 * dx;
+
+        if (e2 <= dx) {
+            if (curP.y == pt.y) break;
+            error += dx;
+            curP.y += sy;
         }
     }
+    
 
     int count = 0;
-    for (auto i = movePoints.begin(); i < movePoints.end(); ++i) {
+    for (auto i = movePoints.begin(); i < movePoints.end(); ++i) { // could look into skipping points to go faster
         SetCursorPos(i->x, i->y);
         
         int gangStalk = ceil(distance / 100.0);
@@ -182,7 +179,7 @@ void moveClick(POINT pt) {
         }
 
         if (count % gangStalk == 0 ) {
-            Sleep(1);
+            Sleep(2);
         }
         count++;
     }
@@ -217,15 +214,12 @@ void fish() {
 
     Sleep(rand() % 300 + 1000);
 
-    //moveClick(withinSquare(331, 440, 592, 470));
-    moveClick(POINT{ 400, 455 });
+    moveClick(withinSquare(331, 440, 592, 470));
     
     Sleep(rand() % 300 + 1000);
 
     // eventually add options to select area
-    //moveClick(withinSquare(333, 610, 574, 636)); // go to crystal for testin
-    moveClick(POINT{ 400, 625 });
-
+    moveClick(withinSquare(333, 610, 574, 636)); // go to crystal for testin
 
     Sleep(rand() % 300 + 1000);
 
@@ -239,14 +233,13 @@ void fish() {
         }
     }
 
-    while (false) {
+    while (true) {
         int fishCaught = 0;
 
         for (POINT pt : fishPoints) {
             COLORREF color = getColor(pt);
             if ((int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380) { // may need to change limits depending on area or use diff method
-                //moveClick(withinCircle(pt->x, pt->y, 15));
-                moveClick(POINT{ pt.x, pt.y });
+                moveClick(withinCircle(pt.x, pt.y, 15));
             }
         }
 
