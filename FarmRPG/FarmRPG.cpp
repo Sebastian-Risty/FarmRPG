@@ -244,24 +244,33 @@ void fish() { // make it so you can stop bot nomatter where this is at, probably
                 click();
 
                 COLORREF circleRight = 0x00FFFFFF;
+                COLORREF bigFISH = 0x00FFFFFF;
                 //COLORREF colorL = 0x00FFFFFF;
 
                 move(withinCircle(1075, 885, 12));
-                circleRight = getColor(POINT{ 1075, 885 });
+                Sleep(100);
+                //circleRight = getColor(POINT{ 1075, 885 });
+                bigFISH = getColor(POINT{ 1200, 885 });
 
                 // for some reason the mouse seems to bug out and not actually click and may/maynot hit the reset loop. not sure what is up with this.
                 // look into trying using color bot for clicking
 
 
-                bool unstuck = false;
-                while ((int(GetGValue(circleRight)) + int(GetBValue(circleRight))) >= 280 || (int(GetRValue(circleRight) + int(GetGValue(circleRight)) + int(GetBValue(circleRight))) == 0)) {
-                    for (int i = 0; i < 15; ++i) {
+                //bool unstuck = false;
+                while ( (int(GetRValue(bigFISH) == 51 && int(GetGValue(bigFISH)) == 51 && int(GetBValue(bigFISH))) == 51)) {
+                    POINT curP{ 0, 0 };
+                    GetCursorPos(&curP);
+                    ScreenToClient(GetDesktopWindow(), &curP);
+
+                    circleRight = getColor(curP);
+                    if ((int(GetRValue(circleRight) == 51 && int(GetGValue(circleRight)) == 51 && int(GetBValue(circleRight))) == 51)) {
                         click();
-                        Sleep(12);
+                        Sleep(10);
                         click();
-                        Sleep(12);
+                        Sleep(550);
                     }
-                    circleRight = getColor(POINT{ 1075, 885 });
+                    bigFISH = getColor(POINT{ 1200, 885 });
+                    /*
                     if ((int(GetRValue(circleRight) + int(GetGValue(circleRight)) + int(GetBValue(circleRight))) == 0 || (int(GetRValue(circleRight) + int(GetGValue(circleRight)) + int(GetBValue(circleRight)))) == 0) && unstuck == false) {
                         POINT curP{ 0, 0 };
                         GetCursorPos(&curP);
@@ -273,6 +282,7 @@ void fish() { // make it so you can stop bot nomatter where this is at, probably
                         move(withinCircle(1075, 885, 12));
                         unstuck = true;
                     }
+                    */
                 }
                 fishCaught++;
                 //move(withinSquare(745, 295, 1070, 430), true); // move back to fishing area
