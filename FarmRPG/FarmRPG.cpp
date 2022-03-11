@@ -6,25 +6,30 @@
 
 // TODO
 // function to move, look into fancy randomized smoothing
-// functions to perform repeated actions in game such as going to home, and other common areas
 // make sure window detection is reliable
+// organize into seperate files
+// add multithreading
 
-// making this shit global cuz ye
+// look into parabolic / sinusoidal line algorithm to make it look more human
+
+// making this shit global cuz fuck you
 HWND cancer = FindWindow(L"Chrome_WidgetWin_1", NULL);
 HWND hwnd = GetWindow(cancer, GW_HWNDNEXT);
 
+std::vector<POINT> fishPoints;
+
 void returnHome();
-POINT withinSquare(double x1, double y1, double x2, double y2);
+POINT withinSquare(double x1, double y1, double x2, double y2); // make these take in POINT for gods sake
 POINT withinCircle(double x, double y, double r);
-void moveClick(POINT pt);
+void move(POINT pt, bool checkForFish = false);
 COLORREF getColor(POINT pt);
 void fish();
+void click();
+void scrollUp(); // TODO
 
 int main()
 {
     initscr(); // inti curses
-
-    srand(time(nullptr)); // generate seed
 
     while (!hwnd) {
         Sleep(50);
@@ -36,6 +41,14 @@ int main()
     SetForegroundWindow(hwnd);
     SetActiveWindow(hwnd);
     SetFocus(hwnd);
+
+    // add fishing points 
+    for (int i = 0; i < 3; ++i) { // TODO: these should be init at program start tbh
+        for (int j = 0; j < 4; ++j) {
+            POINT temp{ 746 + (100 * j), 295 + (75 * i) }; // can use ~15 for radius
+            fishPoints.emplace_back(temp);
+        }
+    }
 
     while (true) {
         Sleep(50);
@@ -102,10 +115,12 @@ int main()
 }
 
 void returnHome() {
-    moveClick(withinSquare(10, 130, 240, 160));
+    move(withinSquare(10, 130, 240, 160));
+    click();
 }
 
 POINT withinSquare(double x1, double y1, double x2, double y2) {
+    srand(time(nullptr)); // generate seed
     POINT temp{0, 0};
     temp.x = rand() % int(x2 - x1) + x1;
     temp.y = rand() % int(y2 - y1) + y1;
@@ -113,13 +128,10 @@ POINT withinSquare(double x1, double y1, double x2, double y2) {
     return temp;
 }
 
-POINT withinCircle(double x, double y, double r) {
-    std::uniform_real_distribution<double> randRadius(0, r);
-    std::uniform_real_distribution<double> randAngle(0, 360);
-    std::default_random_engine re;
-
-    double radius = randRadius(re);
-    double theta = randAngle(re);
+POINT withinCircle(double x, double y, int r) {
+    srand(time(nullptr)); // generate seed
+    int radius = rand() % r;
+    int theta = rand() % 360 + 1;
 
     POINT temp{0, 0};
     temp.x = radius * sin(theta) + x;
@@ -128,7 +140,7 @@ POINT withinCircle(double x, double y, double r) {
     return temp;
 }
 
-void moveClick(POINT pt) {
+void move(POINT pt, bool checkForFish) {
     WINDOWPLACEMENT wp;
     GetWindowPlacement(hwnd, &wp);
 
@@ -170,35 +182,33 @@ void moveClick(POINT pt) {
 
     int count = 0;
     for (auto i = movePoints.begin(); i < movePoints.end(); ++i) { // could look into skipping points to go faster
+
         SetCursorPos(i->x, i->y);
         
         int gangStalk = ceil(distance / 100.0);
 
-        if (gangStalk < 5) {
-            gangStalk = 5;
+        if (gangStalk < 4) {
+            gangStalk = 4;
         }
 
-        if (count % gangStalk == 0 ) {
-            Sleep(2);
+        if (count % (gangStalk * 2) == 0 ) {
+            Sleep(1);
         }
         count++;
+
+
+        // need a second thread so that we can have mouse move while still checking this shit
+        /*
+        if (count % 200 == 0 && checkForFish) { // stop moving to point if there is a fish to go for
+            for (POINT pt : fishPoints) {
+                COLORREF color = getColor(pt);
+                if ((int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380) { // make enums for these vals
+                    return;
+                }
+            }
+        }
+        */
     }
-
-    Sleep(10);
-
-    INPUT input{ 0 };
-    input.type = INPUT_MOUSE;
-
-    input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-    SendInput(1, &input, sizeof(input)); //click
-
-    ZeroMemory(&input, sizeof(input));
-
-    input.mi.dwFlags = MOUSEEVENTF_LEFTUP; // unclick
-
-    Sleep(rand() % 70 + 45); // wait between 45ms - 115ms for humanized left click
-
-    SendInput(1, &input, sizeof(input));
 }
 
 COLORREF getColor(POINT pt) {
@@ -209,37 +219,63 @@ COLORREF getColor(POINT pt) {
     return color;
 }
 
-void fish() {
+void fish() { // make it so you can stop bot nomatter where this is at, probably another thread looking for input??
     returnHome();
+    Sleep(rand() % 200 + 400);
 
-    Sleep(rand() % 300 + 1000);
+    move(withinSquare(331, 440, 592, 470));
+    click();
+    Sleep(rand() % 200 + 400);
 
-    moveClick(withinSquare(331, 440, 592, 470));
-    
-    Sleep(rand() % 300 + 1000);
+    move(withinSquare(333, 610, 574, 636)); // go to crystal for testin, TODO: eventually add options to select area
+    click();
 
-    // eventually add options to select area
-    moveClick(withinSquare(333, 610, 574, 636)); // go to crystal for testin
+    Sleep(rand() % 80 + 250);
 
-    Sleep(rand() % 300 + 1000);
+    //move(withinSquare(745, 295, 1070, 430), true); // prepare to catch by moving to fishing area
 
-    std::vector<POINT> fishPoints;
-
-    // add fishing points 
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            POINT temp { 746 + (100 * j), 295 + (75 * i) }; // can use ~15 for radius
-            fishPoints.emplace_back(temp);
-        }
-    }
+    unsigned int fishCaught = 0;
 
     while (true) {
-        int fishCaught = 0;
-
         for (POINT pt : fishPoints) {
             COLORREF color = getColor(pt);
             if ((int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380) { // may need to change limits depending on area or use diff method
-                moveClick(withinCircle(pt.x, pt.y, 15));
+                move(withinCircle(pt.x, pt.y, 15)); // move to da fish
+                click();
+
+                COLORREF circleRight = 0x00FFFFFF;
+                //COLORREF colorL = 0x00FFFFFF;
+
+                move(withinCircle(1075, 885, 12));
+                circleRight = getColor(POINT{ 1075, 885 });
+
+                // for some reason the mouse seems to bug out and not actually click and may/maynot hit the reset loop. not sure what is up with this.
+                // look into trying using color bot for clicking
+
+
+                bool unstuck = false;
+                while ((int(GetGValue(circleRight)) + int(GetBValue(circleRight))) >= 280 || (int(GetRValue(circleRight) + int(GetGValue(circleRight)) + int(GetBValue(circleRight))) == 0)) {
+                    for (int i = 0; i < 15; ++i) {
+                        click();
+                        Sleep(12);
+                        click();
+                        Sleep(12);
+                    }
+                    circleRight = getColor(POINT{ 1075, 885 });
+                    if ((int(GetRValue(circleRight) + int(GetGValue(circleRight)) + int(GetBValue(circleRight))) == 0 || (int(GetRValue(circleRight) + int(GetGValue(circleRight)) + int(GetBValue(circleRight)))) == 0) && unstuck == false) {
+                        POINT curP{ 0, 0 };
+                        GetCursorPos(&curP);
+                        curP.y -= rand() % 10 + 170;
+                        move(curP);
+                        click();
+                        click();
+                        Sleep(10);
+                        move(withinCircle(1075, 885, 12));
+                        unstuck = true;
+                    }
+                }
+                fishCaught++;
+                //move(withinSquare(745, 295, 1070, 430), true); // move back to fishing area
             }
         }
 
@@ -253,4 +289,22 @@ void fish() {
         printw("\n\nPress NUM0 to stop fishing");
         refresh();
     }
+}
+
+void click() {
+    srand(time(nullptr)); // generate seed
+    INPUT input{ 0 };
+    input.type = INPUT_MOUSE;
+
+    input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+    SendInput(1, &input, sizeof(input)); //click
+
+    ZeroMemory(&input, sizeof(input));
+
+    input.mi.dwFlags = MOUSEEVENTF_LEFTUP; // unclick
+
+    //Sleep(rand() % 70 + 45); // wait between 45ms - 115ms for humanized left click
+
+    SendInput(1, &input, sizeof(input));
+    //Sleep(50);
 }
