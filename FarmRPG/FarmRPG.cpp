@@ -47,11 +47,11 @@ int main()
 
         // debug cursor pos
         if (GetAsyncKeyState(VK_NUMPAD1) & 1) {
-            POINT p;
+            POINT p {0, 0};
             GetCursorPos(&p);
             ScreenToClient(GetDesktopWindow(), &p);
 
-            COLORREF color;
+            COLORREF color = 0x00FFFFFF;
             HDC hdc = GetDC(NULL);
             color = GetPixel(hdc, p.x, p.y);
             ReleaseDC(NULL, hdc);
@@ -106,7 +106,7 @@ void returnHome() {
 }
 
 POINT withinSquare(double x1, double y1, double x2, double y2) {
-    POINT temp;
+    POINT temp{0, 0};
     temp.x = rand() % int(x2 - x1) + x1;
     temp.y = rand() % int(y2 - y1) + y1;
 
@@ -121,7 +121,7 @@ POINT withinCircle(double x, double y, double r) {
     double radius = randRadius(re);
     double theta = randAngle(re);
 
-    POINT temp;
+    POINT temp{0, 0};
     temp.x = radius * sin(theta) + x;
     temp.y = radius * cos(theta) + y;
 
@@ -133,7 +133,7 @@ void moveClick(POINT pt) {
     GetWindowPlacement(hwnd, &wp);
 
     // get cur point
-    POINT curP;
+    POINT curP{ 0, 0 };
     GetCursorPos(&curP);
     ScreenToClient(GetDesktopWindow(), &curP);
 
@@ -145,12 +145,12 @@ void moveClick(POINT pt) {
     }
     double distance = sqrt(pow(pt.x - curP.x, 2) + pow(pt.y - curP.y, 2) * 1.0);
 
-    std::vector<POINT*> movePoints;
+    std::vector<POINT> movePoints;
 
     // Bresenham’s Line Generation Algorithm
     int pk = 2 * dy - dx;
     for (int i = 0; i <= dx; ++i) {
-        POINT* temp = new POINT{ curP.x, curP.y };
+        POINT temp { curP.x, curP.y };
         movePoints.emplace_back(temp);
 
         //checking either to decrement or increment the value
@@ -170,13 +170,10 @@ void moveClick(POINT pt) {
             pk = pk + 2 * dy - 2 * dx;
         }
     }
-   
-    auto testX = movePoints.at(movePoints.size() - 1)->x;
-    auto testY = movePoints.at(movePoints.size() - 1)->y;
 
     int count = 0;
     for (auto i = movePoints.begin(); i < movePoints.end(); ++i) {
-        SetCursorPos((*i)->x, (*i)->y);
+        SetCursorPos(i->x, i->y);
         
         int gangStalk = ceil(distance / 100.0);
 
@@ -190,7 +187,7 @@ void moveClick(POINT pt) {
         count++;
     }
 
-    //Sleep(10);
+    Sleep(10);
 
     INPUT input{ 0 };
     input.type = INPUT_MOUSE;
@@ -208,7 +205,7 @@ void moveClick(POINT pt) {
 }
 
 COLORREF getColor(POINT pt) {
-    COLORREF color;
+    COLORREF color = 0x00FFFFFF;
     HDC hdc = GetDC(NULL);
     color = GetPixel(hdc, pt.x, pt.y);
     ReleaseDC(NULL, hdc);
@@ -220,32 +217,36 @@ void fish() {
 
     Sleep(rand() % 300 + 1000);
 
-    moveClick(withinSquare(331, 440, 592, 470));
+    //moveClick(withinSquare(331, 440, 592, 470));
+    moveClick(POINT{ 400, 455 });
     
     Sleep(rand() % 300 + 1000);
 
     // eventually add options to select area
-    moveClick(withinSquare(333, 610, 574, 636)); // go to crystal for testin
+    //moveClick(withinSquare(333, 610, 574, 636)); // go to crystal for testin
+    moveClick(POINT{ 400, 625 });
+
 
     Sleep(rand() % 300 + 1000);
 
-    std::vector<POINT*> fishPoints;
+    std::vector<POINT> fishPoints;
 
     // add fishing points 
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 4; ++j) {
-            POINT* temp = new POINT{ 746 + (100 * j), 295 + (75 * i) }; // can use ~15 for radius
+            POINT temp { 746 + (100 * j), 295 + (75 * i) }; // can use ~15 for radius
             fishPoints.emplace_back(temp);
         }
     }
 
-    while (true) {
+    while (false) {
         int fishCaught = 0;
 
-        for (POINT* pt : fishPoints) {
-            COLORREF color = getColor(*pt);
+        for (POINT pt : fishPoints) {
+            COLORREF color = getColor(pt);
             if ((int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380) { // may need to change limits depending on area or use diff method
-                moveClick(withinCircle(pt->x, pt->y, 15));
+                //moveClick(withinCircle(pt->x, pt->y, 15));
+                moveClick(POINT{ pt.x, pt.y });
             }
         }
 
