@@ -3,6 +3,7 @@
 #include <curses.h>
 #include <vector>
 #include <random>
+#include <ctime>
 
 // TODO
 // function to move, look into fancy randomized smoothing
@@ -191,7 +192,7 @@ void move(POINT pt, bool checkForFish) {
             gangStalk = 4;
         }
 
-        if (count % (gangStalk * 2) == 0 ) {
+        if (count % (gangStalk * 2) - 2 == 0 ) {
             Sleep(1);
         }
         count++;
@@ -229,60 +230,65 @@ void fish() { // make it so you can stop bot nomatter where this is at, probably
 
     move(withinSquare(333, 610, 574, 636)); // go to crystal for testin, TODO: eventually add options to select area
     click();
+    
+    Sleep(300);
 
-    Sleep(rand() % 80 + 250);
+    // generate the colors at each point for current area
+    std::vector<COLORREF> colorAtFishPoints;
+    for (POINT pt : fishPoints) {
+        colorAtFishPoints.emplace_back(getColor(pt));
+    }
 
+    //Sleep(rand() % 80 + 250);
     //move(withinSquare(745, 295, 1070, 430), true); // prepare to catch by moving to fishing area
 
     unsigned int fishCaught = 0;
 
     while (true) {
-        for (POINT pt : fishPoints) {
-            COLORREF color = getColor(pt);
-            if ((int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380) { // may need to change limits depending on area or use diff method
-                move(withinCircle(pt.x, pt.y, 15)); // move to da fish
-                click();
+        for (auto i = 0; i < fishPoints.size(); ++i) {
+            COLORREF curColor = getColor(fishPoints.at(i));
+            int averageColor = int(GetRValue(colorAtFishPoints.at(i))) + int(GetGValue(colorAtFishPoints.at(i))) + int(GetBValue(colorAtFishPoints.at(i)));
+            int curAverageColor = int(GetRValue(curColor)) + int(GetGValue(curColor)) + int(GetBValue(curColor));
+            
+            /*
+            clear();
+            printw("%d %d %d\n", int(GetRValue(colorAtFishPoints.at(i))), int(GetGValue(colorAtFishPoints.at(i))), int(GetBValue(colorAtFishPoints.at(i))));
+            printw("%d %d %d", int(GetRValue(curColor)), int(GetGValue(curColor)), int(GetBValue(curColor)));
+            refresh();
+            */
 
+            if (curAverageColor < averageColor - 40) { // (int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380
+                move(withinCircle(fishPoints.at(i).x, fishPoints.at(i).y, 15)); // move to da fish
+                click();
                 COLORREF circleRight = 0x00FFFFFF;
                 COLORREF bigFISH = 0x00FFFFFF;
                 //COLORREF colorL = 0x00FFFFFF;
 
                 move(withinCircle(1075, 885, 12));
-                Sleep(100);
+                Sleep(500);
                 //circleRight = getColor(POINT{ 1075, 885 });
                 bigFISH = getColor(POINT{ 1200, 885 });
 
-                // for some reason the mouse seems to bug out and not actually click and may/maynot hit the reset loop. not sure what is up with this.
-                // look into trying using color bot for clicking
-
-
-                //bool unstuck = false;
                 while ( (int(GetRValue(bigFISH) == 51 && int(GetGValue(bigFISH)) == 51 && int(GetBValue(bigFISH))) == 51)) {
                     POINT curP{ 0, 0 };
                     GetCursorPos(&curP);
                     ScreenToClient(GetDesktopWindow(), &curP);
 
                     circleRight = getColor(curP);
-                    if ((int(GetRValue(circleRight) == 51 && int(GetGValue(circleRight)) == 51 && int(GetBValue(circleRight))) == 51)) {
+
+                    clear();
+                    printw("%d %d", curP.x, curP.y);
+                    printw("%d %d %d", int(GetRValue(circleRight)), int(GetGValue(circleRight)), int(GetBValue(circleRight)));
+                    refresh();
+
+                    if (int(GetBValue(circleRight)) == 255) {
                         click();
-                        Sleep(10);
+                        Sleep(50);
                         click();
-                        Sleep(550);
                     }
+
+                    //Sleep(100);
                     bigFISH = getColor(POINT{ 1200, 885 });
-                    /*
-                    if ((int(GetRValue(circleRight) + int(GetGValue(circleRight)) + int(GetBValue(circleRight))) == 0 || (int(GetRValue(circleRight) + int(GetGValue(circleRight)) + int(GetBValue(circleRight)))) == 0) && unstuck == false) {
-                        POINT curP{ 0, 0 };
-                        GetCursorPos(&curP);
-                        curP.y -= rand() % 10 + 170;
-                        move(curP);
-                        click();
-                        click();
-                        Sleep(10);
-                        move(withinCircle(1075, 885, 12));
-                        unstuck = true;
-                    }
-                    */
                 }
                 fishCaught++;
                 //move(withinSquare(745, 295, 1070, 430), true); // move back to fishing area
