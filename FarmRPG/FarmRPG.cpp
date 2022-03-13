@@ -231,7 +231,7 @@ void fish() { // make it so you can stop bot nomatter where this is at, probably
     move(withinSquare(333, 610, 574, 636)); // go to crystal for testin, TODO: eventually add options to select area
     click();
     
-    Sleep(300);
+    Sleep(400);
 
     // generate the colors at each point for current area
     std::vector<COLORREF> colorAtFishPoints;
@@ -250,6 +250,11 @@ void fish() { // make it so you can stop bot nomatter where this is at, probably
             int averageColor = int(GetRValue(colorAtFishPoints.at(i))) + int(GetGValue(colorAtFishPoints.at(i))) + int(GetBValue(colorAtFishPoints.at(i)));
             int curAverageColor = int(GetRValue(curColor)) + int(GetGValue(curColor)) + int(GetBValue(curColor));
             
+            clear();
+            printw("Looking for fish.\n");
+            printw("Fish caught: %d", fishCaught);
+            printw("\n\nPress NUM0 to stop fishing");
+            refresh();
             /*
             clear();
             printw("%d %d %d\n", int(GetRValue(colorAtFishPoints.at(i))), int(GetGValue(colorAtFishPoints.at(i))), int(GetBValue(colorAtFishPoints.at(i))));
@@ -257,53 +262,69 @@ void fish() { // make it so you can stop bot nomatter where this is at, probably
             refresh();
             */
 
-            if (curAverageColor < averageColor - 40) { // (int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380
+            if (curAverageColor < averageColor - 10) { // (int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380
+                clear();
+                printw("Fish found.\n");
+                printw("Fish caught: %d", fishCaught);
+                printw("\n\nPress NUM0 to stop fishing");
+                refresh();
                 move(withinCircle(fishPoints.at(i).x, fishPoints.at(i).y, 15)); // move to da fish
                 click();
-                COLORREF circleRight = 0x00FFFFFF;
-                COLORREF bigFISH = 0x00FFFFFF;
-                //COLORREF colorL = 0x00FFFFFF;
+                break;
+            }
 
-                move(withinCircle(1075, 885, 12));
-                Sleep(500);
-                //circleRight = getColor(POINT{ 1075, 885 });
-                bigFISH = getColor(POINT{ 1200, 885 });
-
-                while ( (int(GetRValue(bigFISH) == 51 && int(GetGValue(bigFISH)) == 51 && int(GetBValue(bigFISH))) == 51)) {
-                    POINT curP{ 0, 0 };
-                    GetCursorPos(&curP);
-                    ScreenToClient(GetDesktopWindow(), &curP);
-
-                    circleRight = getColor(curP);
-
-                    clear();
-                    printw("%d %d", curP.x, curP.y);
-                    printw("%d %d %d", int(GetRValue(circleRight)), int(GetGValue(circleRight)), int(GetBValue(circleRight)));
-                    refresh();
-
-                    if (int(GetBValue(circleRight)) == 255) {
-                        click();
-                        Sleep(50);
-                        click();
-                    }
-
-                    //Sleep(100);
-                    bigFISH = getColor(POINT{ 1200, 885 });
-                }
-                fishCaught++;
-                //move(withinSquare(745, 295, 1070, 430), true); // move back to fishing area
+            // reset loop
+            if (i == fishPoints.size() - 1) {
+                i = 0;
             }
         }
+
+        clear();
+        printw("Catching the fish.\n");
+        printw("Fish caught: %d", fishCaught);
+        printw("\n\nPress NUM0 to stop fishing");
+        refresh();
+
+        // maybe check if window appears before moving down just to make sure the catch wasnt fucked up
+
+        move(withinCircle(1090, 890, 10));
+        
+        Sleep(250);
+
+        // look into alternative version that just spam clicks and stops when grey area is gone
+
+        //COLORREF catchWindow = getColor(POINT{ 1400, 885 });
+        COLORREF circleRight;
+        while (true) { // (int(GetRValue(catchWindow) == 51 && int(GetGValue(catchWindow)) == 51 && int(GetBValue(catchWindow))) == 51)
+            Sleep(10);
+            circleRight = getColor(POINT{ 1090, 890 });
+            if (int(GetBValue(circleRight)) == 255) {
+                Sleep(20);
+                click();
+                break;
+            }
+            //catchWindow = getColor(POINT{ 1400, 885 });
+        }
+        fishCaught++;
 
         if (GetAsyncKeyState(VK_END) & 1) {
             break;
         }
 
-        clear();
-        printw("Fish caught: %d", fishCaught);
+        if (fishCaught > 0) {
+            clear();
+            printw("Caught it!\n");
+            printw("Fish caught: %d", fishCaught);
+            printw("\n\nPress NUM0 to stop fishing");
+            refresh();
+        }
+        else {
+            clear();
+            printw("Fish caught: %d", fishCaught);
 
-        printw("\n\nPress NUM0 to stop fishing");
-        refresh();
+            printw("\n\nPress NUM0 to stop fishing");
+            refresh();
+        }
     }
 }
 
