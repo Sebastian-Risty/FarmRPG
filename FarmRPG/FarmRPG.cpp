@@ -255,14 +255,8 @@ void fish() { // make it so you can stop bot nomatter where this is at, probably
             printw("Fish caught: %d", fishCaught);
             printw("\n\nPress NUM0 to stop fishing");
             refresh();
-            /*
-            clear();
-            printw("%d %d %d\n", int(GetRValue(colorAtFishPoints.at(i))), int(GetGValue(colorAtFishPoints.at(i))), int(GetBValue(colorAtFishPoints.at(i))));
-            printw("%d %d %d", int(GetRValue(curColor)), int(GetGValue(curColor)), int(GetBValue(curColor)));
-            refresh();
-            */
 
-            if (curAverageColor < averageColor - 10) { // (int(GetRValue(color)) + int(GetGValue(color)) + int(GetBValue(color))) < 380
+            if (curAverageColor < averageColor - 10) { 
                 clear();
                 printw("Fish found.\n");
                 printw("Fish caught: %d", fishCaught);
@@ -286,12 +280,11 @@ void fish() { // make it so you can stop bot nomatter where this is at, probably
         refresh();
 
         // maybe check if window appears before moving down just to make sure the catch wasnt fucked up
+        // also add a check for when bait has run out, or just base it on catch count or smthn
 
         move(withinCircle(1090, 890, 10));
         
         Sleep(250);
-
-        // look into alternative version that just spam clicks and stops when grey area is gone
 
         //COLORREF catchWindow = getColor(POINT{ 1400, 885 });
         COLORREF circleRight;
