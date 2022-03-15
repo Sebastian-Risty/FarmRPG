@@ -30,13 +30,15 @@ void enterArea(LONG area);
 
 int main()
 {
-    initscr(); // inti curses
+    initscr(); // intit curses
 
     while (!hwnd) {
         Sleep(50);
         clear();
         printw("chromium not found");
         refresh();
+        cancer = FindWindow(L"Chrome_WidgetWin_1", NULL);
+        GetWindow(cancer, GW_HWNDNEXT);
     }
 
     SetForegroundWindow(hwnd);
@@ -46,7 +48,7 @@ int main()
     // add fishing points 
     for (LONG i = 0; i < 3; ++i) { 
         for (LONG j = 0; j < 4; ++j) {
-            fishPoints.emplace_back(POINT{ 746 + (100 * j), 295 + (75 * i) } );
+            fishPoints.emplace_back(POINT{ 745 + (100 * j), 295 + (75 * i) } );
         }
     }
 
@@ -221,11 +223,6 @@ void fish() {
         colorAtFishPoints.emplace_back(getColor(pt));
     }
 
-    std::vector<LONG> debug;
-    for (COLORREF color : colorAtFishPoints) {
-        debug.emplace_back(LONG(GetBValue(color)));
-    }
-
     //Sleep(rand() % 80 + 250);
     //move(withinSquare(745, 295, 1070, 430), true); // prepare to catch by moving to fishing area
 
@@ -234,7 +231,7 @@ void fish() {
     LONG buyBait = (rand() % 30 + 300);
 
     while (fishCaught < maxFish) {
-        for (auto i = 0; i < fishPoints.size(); ++i) {
+        for (LONG i = 0; i < fishPoints.size(); ++i) {
             COLORREF curColor = getColor(fishPoints.at(i));
             LONG averageColor = LONG(GetRValue(colorAtFishPoints.at(i))) + LONG(GetGValue(colorAtFishPoints.at(i))) + LONG(GetBValue(colorAtFishPoints.at(i)));
             LONG curAverageColor = LONG(GetRValue(curColor)) + LONG(GetGValue(curColor)) + LONG(GetBValue(curColor));
@@ -245,20 +242,20 @@ void fish() {
             printw("\n\nPress NUM0 to stop fishing");
             refresh();
 
-            if (curAverageColor < averageColor - 10) { 
+            if (curAverageColor < averageColor - 5) { 
                 clear();
                 printw("Fish found.\n");
                 printw("Fish caught: %d", fishCaught);
                 printw("\n\nPress NUM0 to stop fishing");
                 refresh();
-                move(withinCircle(fishPoints.at(i), 15)); // move to da fish
+                move(withinCircle(fishPoints.at(i), 13)); // move to da fish
                 click();
                 break;
             }
 
             // reset loop
             if (i == fishPoints.size() - 1) {
-                i = 0;
+                i = -1;
             }
         }
 
@@ -271,21 +268,21 @@ void fish() {
         // maybe check if window appears before moving down just to make sure the catch wasnt fucked up
         // also add a check for when bait has run out, or just base it on catch count or smthn
 
-        move(withinCircle(POINT{ 1090, 890 }, 10));
-        
+        move(withinCircle(POINT{ 1078, 890 }, 8));
+
         Sleep(250);
 
-        //COLORREF catchWindow = getColor(POINT{ 1400, 885 });
         COLORREF circleRight;
-        while (true) { // (int(GetRValue(catchWindow) == 51 && int(GetGValue(catchWindow)) == 51 && int(GetBValue(catchWindow))) == 51)
-            Sleep(10);
+        COLORREF catchWindow = getColor(POINT{ 1400, 885 });
+        while (int(GetRValue(catchWindow) >=48 && int(GetRValue(catchWindow) <= 54))) { // make sure fish was actually caught
+            Sleep(12);
             circleRight = getColor(POINT{ 1090, 890 });
+            catchWindow = getColor(POINT{ 1400, 885 });
             if (LONG(GetBValue(circleRight)) == 255) {
-                Sleep(20);
+                Sleep(18);
                 click();
                 break;
             }
-            //catchWindow = getColor(POINT{ 1400, 885 });
         }
         fishCaught++;
 
