@@ -144,11 +144,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="basic.cpp" />
     <ClCompile Include="FarmRPG.cpp" />
+    <ClCompile Include="fishing.cpp" />
     <ClCompile Include="globals.cpp" />
+    <ClCompile Include="locations.cpp" />
+    <ClCompile Include="mouse.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="basic.h" />
+    <ClInclude Include="fishing.h" />
     <ClInclude Include="globals.h" />
+    <ClInclude Include="locations.h" />
+    <ClInclude Include="mouse.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

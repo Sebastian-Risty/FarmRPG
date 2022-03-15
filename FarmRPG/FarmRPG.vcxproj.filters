@@ -1,33 +1,65 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="functions">
-      <UniqueIdentifier>{acd3e274-87c3-4930-abfe-3260c763fe4f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="util">
+    <Filter Include="globals">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="basic">
+      <UniqueIdentifier>{55f85c85-ce13-4794-9a93-3f111b133679}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mouse">
+      <UniqueIdentifier>{8f499687-565a-4658-9180-bb1c320ba036}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fishing">
+      <UniqueIdentifier>{5393170b-833a-4cd8-8ebc-2f934b7d609c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="locations">
+      <UniqueIdentifier>{365cc7b3-c033-4185-98f3-d49bef925a15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FarmRPG.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>main</Filter>
     </ClCompile>
     <ClCompile Include="globals.cpp">
-      <Filter>util</Filter>
+      <Filter>globals</Filter>
+    </ClCompile>
+    <ClCompile Include="basic.cpp">
+      <Filter>basic</Filter>
+    </ClCompile>
+    <ClCompile Include="mouse.cpp">
+      <Filter>mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="fishing.cpp">
+      <Filter>fishing</Filter>
+    </ClCompile>
+    <ClCompile Include="locations.cpp">
+      <Filter>locations</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="globals.h">
-      <Filter>util</Filter>
+      <Filter>globals</Filter>
+    </ClInclude>
+    <ClInclude Include="basic.h">
+      <Filter>basic</Filter>
+    </ClInclude>
+    <ClInclude Include="mouse.h">
+      <Filter>mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="fishing.h">
+      <Filter>fishing</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>globals</Filter>
+    </ClInclude>
+    <ClInclude Include="locations.h">
+      <Filter>locations</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
