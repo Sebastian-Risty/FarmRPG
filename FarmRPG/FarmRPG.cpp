@@ -1,22 +1,20 @@
 #include <iostream>
-#include <Windows.h>
 #include <curses.h>
-#include <vector>
 #include <random>
 #include <ctime>
+#include "globals.h"
 
 // TODO
+// add interactivity to fishing
+// settings file
+// random 'breaks' during fishing session (2 levels, tiny breaks ~20 - 50 seconds, and longer breaks ~5 - 10 min, long only occurs after 500+
+// make an enum for the area selection to make it easier to code & read
+
 // make sure window detection is reliable
 // organize into seperate files
 // add multithreading
 
 // look into parabolic / sinusoidal line algorithm to make it look more human
-
-// making this shit global cuz fuck you
-HWND cancer = FindWindow(L"Chrome_WidgetWin_1", NULL);
-HWND hwnd = GetWindow(cancer, GW_HWNDNEXT);
-
-std::vector<POINT> fishPoints;
 
 POINT withinSquare(POINT pt1, POINT pt2);
 POINT withinCircle(POINT pt, LONG r);
@@ -30,25 +28,28 @@ void enterArea(LONG area);
 
 int main()
 {
-    initscr(); // intit curses
+    initscr(); // intit curseszz
 
-    while (!hwnd) {
+    globals::cancer = FindWindow(L"Chrome_WidgetWin_1", NULL);
+    globals::hwnd = GetWindow(globals::cancer, GW_HWNDNEXT);
+
+    while (!globals::hwnd) {
         Sleep(50);
         clear();
         printw("chromium not found");
         refresh();
-        cancer = FindWindow(L"Chrome_WidgetWin_1", NULL);
-        GetWindow(cancer, GW_HWNDNEXT);
+        globals::cancer = FindWindow(L"Chrome_WidgetWin_1", NULL);
+        GetWindow(globals::cancer, GW_HWNDNEXT);
     }
 
-    SetForegroundWindow(hwnd);
-    SetActiveWindow(hwnd);
-    SetFocus(hwnd);
+    SetForegroundWindow(globals::hwnd);
+    SetActiveWindow(globals::hwnd);
+    SetFocus(globals::hwnd);
 
     // add fishing points 
     for (LONG i = 0; i < 3; ++i) { 
         for (LONG j = 0; j < 4; ++j) {
-            fishPoints.emplace_back(POINT{ 745 + (100 * j), 295 + (75 * i) } );
+            globals::fishPoints.emplace_back(POINT{ 745 + (100 * j), 295 + (75 * i) } );
         }
     }
 
@@ -80,24 +81,6 @@ int main()
             refresh();
         }
 
-        // debug mousePos
-        if (GetAsyncKeyState(VK_NUMPAD2) & 1) {
-            INPUT input{ 0 };
-
-            input.type = INPUT_MOUSE;
-            input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-            SendInput(1, &input, sizeof(input));
-
-            ZeroMemory(&input, sizeof(input));
-
-            input.type = INPUT_MOUSE;
-            input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
-
-            Sleep(rand() % 70 + 45); // wait between 45ms - 115ms for humanized left click
-
-            SendInput(1, &input, sizeof(input));
-        }
-
         // debug keystroke
         if (GetAsyncKeyState(VK_NUMPAD3) & 1) { 
             INPUT input{ 0 };
@@ -112,11 +95,6 @@ int main()
         if (GetAsyncKeyState(VK_NUMPAD4) & 1) {
             fish();
         }
-
-        if (GetAsyncKeyState(VK_NUMPAD5) & 1) {
-            scroll(-1);
-        }
-
     }
 }
 
@@ -133,7 +111,7 @@ POINT withinCircle(POINT pt, LONG r) {
 
 void move(POINT pt, bool checkForFish) {
     WINDOWPLACEMENT wp;
-    GetWindowPlacement(hwnd, &wp);
+    GetWindowPlacement(globals::hwnd, &wp);
 
     // get cur point
     POINT curP{ 0, 0 };
@@ -182,7 +160,7 @@ void move(POINT pt, bool checkForFish) {
             gangStalk = 4;
         }
 
-        if (count % (gangStalk * 2) - 2 == 0 ) {
+        if (count % (gangStalk * 2) - 3 == 0 ) {
             Sleep(1);
         }
         count++;
@@ -219,7 +197,7 @@ void fish() {
 
     // generate the colors at each point for current area
     std::vector<COLORREF> colorAtFishPoints;
-    for (POINT pt : fishPoints) {
+    for (POINT pt : globals::fishPoints) {
         colorAtFishPoints.emplace_back(getColor(pt));
     }
 
@@ -231,8 +209,8 @@ void fish() {
     LONG buyBait = (rand() % 30 + 300);
 
     while (fishCaught < maxFish) {
-        for (LONG i = 0; i < fishPoints.size(); ++i) {
-            COLORREF curColor = getColor(fishPoints.at(i));
+        for (LONG i = 0; i < globals::fishPoints.size(); ++i) {
+            COLORREF curColor = getColor(globals::fishPoints.at(i));
             LONG averageColor = LONG(GetRValue(colorAtFishPoints.at(i))) + LONG(GetGValue(colorAtFishPoints.at(i))) + LONG(GetBValue(colorAtFishPoints.at(i)));
             LONG curAverageColor = LONG(GetRValue(curColor)) + LONG(GetGValue(curColor)) + LONG(GetBValue(curColor));
             
@@ -248,13 +226,13 @@ void fish() {
                 printw("Fish caught: %d", fishCaught);
                 printw("\n\nPress NUM0 to stop fishing");
                 refresh();
-                move(withinCircle(fishPoints.at(i), 13)); // move to da fish
+                move(withinCircle(globals::fishPoints.at(i), 13)); // move to da fish
                 click();
                 break;
             }
 
             // reset loop
-            if (i == fishPoints.size() - 1) {
+            if (i == globals::fishPoints.size() - 1) {
                 i = -1;
             }
         }
