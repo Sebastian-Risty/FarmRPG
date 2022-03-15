@@ -19,14 +19,14 @@ HWND hwnd = GetWindow(cancer, GW_HWNDNEXT);
 std::vector<POINT> fishPoints;
 
 POINT withinSquare(POINT pt1, POINT pt2);
-POINT withinCircle(POINT pt, int r);
+POINT withinCircle(POINT pt, LONG r);
 void move(POINT pt, bool checkForFish = false);
 COLORREF getColor(POINT pt);
 void fish();
 void click();
-void scroll(int dir = 1);
+void scroll(LONG dir = 1);
 void buyWorm();
-void enterArea(int area);
+void enterArea(LONG area);
 
 int main()
 {
@@ -44,10 +44,9 @@ int main()
     SetFocus(hwnd);
 
     // add fishing points 
-    for (int i = 0; i < 3; ++i) { // TODO: these should be init at program start tbh
-        for (int j = 0; j < 4; ++j) {
-            POINT temp{ 746 + (100 * j), 295 + (75 * i) }; // can use ~15 for radius
-            fishPoints.emplace_back(temp);
+    for (LONG i = 0; i < 3; ++i) { 
+        for (LONG j = 0; j < 4; ++j) {
+            fishPoints.emplace_back(POINT{ 746 + (100 * j), 295 + (75 * i) } );
         }
     }
 
@@ -75,7 +74,7 @@ int main()
             clear();
             printw("X: %d | Y: %d\n", p.x, p.y);
             printw("DX: %d | DY: %d\n", dx, dy);
-            printw("R: %d | G: %d | B: %d", int(GetRValue(color)), int(GetGValue(color)), int(GetBValue(color)));
+            printw("R: %d | G: %d | B: %d", LONG(GetRValue(color)), LONG(GetGValue(color)), LONG(GetBValue(color)));
             refresh();
         }
 
@@ -121,23 +120,13 @@ int main()
 
 POINT withinSquare(POINT pt1, POINT pt2) {
     srand(time(nullptr)); // generate seed
-    POINT temp{0, 0};
-    temp.x = rand() % int(pt2.x - pt1.x) + pt1.x;
-    temp.y = rand() % int(pt2.y - pt1.y) + pt1.y;
-
-    return temp;
+    return POINT{ rand() % LONG(pt2.x - pt1.x) + pt1.x , rand() % LONG(pt2.y - pt1.y) + pt1.y };
 }
 
-POINT withinCircle(POINT pt, int r) {
+POINT withinCircle(POINT pt, LONG r) {
     srand(time(nullptr)); // generate seed
-    int radius = rand() % r;
-    int theta = rand() % 360 + 1;
-
-    POINT temp{0, 0};
-    temp.x = radius * sin(theta) + pt.x;
-    temp.y = radius * cos(theta) + pt.y;
-
-    return temp;
+    LONG radius = rand() % r, theta = rand() % 360 + 1;
+    return POINT{ radius * LONG(sin(theta)) + pt.x , radius * LONG(cos(theta)) + pt.y };
 }
 
 void move(POINT pt, bool checkForFish) {
@@ -154,17 +143,17 @@ void move(POINT pt, bool checkForFish) {
     std::vector<POINT> movePoints;
 
     // Bresenham’s Line Generation Algorithm
-    int dx = abs(pt.x - curP.x);
-    int sx = curP.x < pt.x ? 1 : -1;
-    int dy = -abs(pt.y - curP.y);
-    int sy = curP.y < pt.y ? 1 : -1;
-    int error = dx + dy;
+    LONG dx = abs(pt.x - curP.x);
+    LONG sx = curP.x < pt.x ? 1 : -1;
+    LONG dy = -abs(pt.y - curP.y);
+    LONG sy = curP.y < pt.y ? 1 : -1;
+    LONG error = dx + dy;
 
     while (true) {
         movePoints.push_back(POINT{ curP.x, curP.y });
         if (curP.x == pt.x && curP.y == pt.y) break;
 
-        int e2 = 2 * error;
+        LONG e2 = 2 * error;
 
         if (e2 >= dy) {
             if (curP.x == pt.x) break;
@@ -180,12 +169,12 @@ void move(POINT pt, bool checkForFish) {
     }
     
 
-    int count = 0;
+    LONG count = 0;
     for (auto i = movePoints.begin(); i < movePoints.end(); ++i) { // could look into skipping points to go faster
 
         SetCursorPos(i->x, i->y);
         
-        int gangStalk = ceil(distance / 100.0);
+        LONG gangStalk = ceil(distance / 100.0);
 
         if (gangStalk < 4) {
             gangStalk = 4;
@@ -222,9 +211,9 @@ COLORREF getColor(POINT pt) {
 void fish() { 
     buyWorm();
 
-    enterArea(36); // head to emerald
+    enterArea(37); // head to emerald
     
-    Sleep(400);
+    Sleep(500);
 
     // generate the colors at each point for current area
     std::vector<COLORREF> colorAtFishPoints;
@@ -232,19 +221,23 @@ void fish() {
         colorAtFishPoints.emplace_back(getColor(pt));
     }
 
+    std::vector<LONG> debug;
+    for (COLORREF color : colorAtFishPoints) {
+        debug.emplace_back(LONG(GetBValue(color)));
+    }
+
     //Sleep(rand() % 80 + 250);
     //move(withinSquare(745, 295, 1070, 430), true); // prepare to catch by moving to fishing area
 
-    unsigned int fishCaught = 0;
-    unsigned int maxFish = 25;
-    //unsigned int buyBait = (rand() % 30 + 300);
-    unsigned int buyBait = 10;
+    LONG fishCaught = 0;
+    LONG maxFish = 1000;
+    LONG buyBait = (rand() % 30 + 300);
 
     while (fishCaught < maxFish) {
         for (auto i = 0; i < fishPoints.size(); ++i) {
             COLORREF curColor = getColor(fishPoints.at(i));
-            int averageColor = int(GetRValue(colorAtFishPoints.at(i))) + int(GetGValue(colorAtFishPoints.at(i))) + int(GetBValue(colorAtFishPoints.at(i)));
-            int curAverageColor = int(GetRValue(curColor)) + int(GetGValue(curColor)) + int(GetBValue(curColor));
+            LONG averageColor = LONG(GetRValue(colorAtFishPoints.at(i))) + LONG(GetGValue(colorAtFishPoints.at(i))) + LONG(GetBValue(colorAtFishPoints.at(i)));
+            LONG curAverageColor = LONG(GetRValue(curColor)) + LONG(GetGValue(curColor)) + LONG(GetBValue(curColor));
             
             clear();
             printw("Looking for fish.\n");
@@ -287,7 +280,7 @@ void fish() {
         while (true) { // (int(GetRValue(catchWindow) == 51 && int(GetGValue(catchWindow)) == 51 && int(GetBValue(catchWindow))) == 51)
             Sleep(10);
             circleRight = getColor(POINT{ 1090, 890 });
-            if (int(GetBValue(circleRight)) == 255) {
+            if (LONG(GetBValue(circleRight)) == 255) {
                 Sleep(20);
                 click();
                 break;
@@ -320,7 +313,7 @@ void fish() {
             buyBait = (rand() % 30 + 300);
             Sleep(100);
             enterArea(36);
-            Sleep(400);
+            Sleep(500);
         }
 
     }
@@ -340,7 +333,7 @@ void click() {
     SendInput(1, &input, sizeof(input));
 }
 
-void scroll(int dir) {
+void scroll(LONG dir) {
     Sleep(500);
     INPUT input{ 0 };
     input.type = INPUT_MOUSE;
@@ -350,7 +343,7 @@ void scroll(int dir) {
     SendInput(1, &input, sizeof(input));
 }
 
-void enterArea(int area) {
+void enterArea(LONG area) {
     srand(time(nullptr));
 
     switch (area) {
@@ -469,7 +462,7 @@ void enterArea(int area) {
     case 37:
         enterArea(12);
         Sleep(rand() % 200 + 400);
-        move(withinSquare(POINT{ 330, 720}, POINT{ 570, 780})); // XXX 37
+        move(withinSquare(POINT{ 330, 720}, POINT{ 570, 780})); // Vast Ocean 37
         click();
         break;
     case 38:
