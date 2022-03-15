@@ -1,9 +1,15 @@
 #include "fishing.h"
 
 void fish() {
+    LONG fishCaught = 0;
+    LONG maxFish = 136;
+    LONG buyBait = (rand() % 30 + 300);
+    LONG fishingArea = 37;
+
+
     buyWorm();
 
-    enterArea(37); // head to emerald
+    enterArea(fishingArea); // head to emerald
 
     Sleep(500);
 
@@ -15,10 +21,6 @@ void fish() {
 
     //Sleep(rand() % 80 + 250);
     //move(withinSquare(745, 295, 1070, 430), true); // prepare to catch by moving to fishing area
-
-    LONG fishCaught = 0;
-    LONG maxFish = 1000;
-    LONG buyBait = (rand() % 30 + 300);
 
     while (fishCaught < maxFish) {
         for (LONG i = 0; i < globals::fishPoints.size(); ++i) {
@@ -97,9 +99,9 @@ void fish() {
         // buy more bait if needed
         if (fishCaught % buyBait == 0) {
             buyWorm();
-            buyBait = (rand() % 30 + 300);
+            buyBait += (rand() % 30 + 300);
             Sleep(100);
-            enterArea(36);
+            enterArea(fishingArea);
             Sleep(500);
         }
 

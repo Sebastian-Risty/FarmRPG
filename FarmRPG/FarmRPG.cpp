@@ -8,13 +8,9 @@
 // settings file
 // random 'breaks' during fishing session (2 levels, tiny breaks ~20 - 50 seconds, and longer breaks ~5 - 10 min, long only occurs after 500+
 // make an enum for the area selection to make it easier to code & read
-
 // make sure window detection is reliable
-// organize into seperate files
 // add multithreading
-
 // look into parabolic / sinusoidal line algorithm to make it look more human
-void enterArea(LONG area); // own function
 
 int main()
 {
@@ -26,7 +22,7 @@ int main()
     while (!globals::hwnd) {
         Sleep(50);
         clear();
-        printw("chromium not found");
+        printw("chromium not found"); // force open chrome and goto farmRPG?
         refresh();
         globals::cancer = FindWindow(L"Chrome_WidgetWin_1", NULL);
         GetWindow(globals::cancer, GW_HWNDNEXT);
@@ -45,12 +41,6 @@ int main()
 
     while (true) {
         Sleep(50);
-
-        // close
-        //if (GetAsyncKeyState(VK_END) & 1) {
-        //    return 0;
-        //}
-
         // debug cursor pos
         if (GetAsyncKeyState(VK_NUMPAD1) & 1) {
             POINT p {0, 0};
